@@ -1,5 +1,5 @@
 require(TTR)
-data = read.csv(file = '~/Git/marketalgo/data_raw_qc/audusd.csv', header = FALSE)
+data = read.csv(file = '~/Git/marketalgo/data_qc_raw_hourly/audusd.csv', header = FALSE)
 colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
 
 EMA <- EMA(data[,('Close')], 10)
