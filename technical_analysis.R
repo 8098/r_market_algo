@@ -1,4 +1,5 @@
 require(TTR)
+
 data = read.csv(file = '~/Git/marketalgo/data_qc_raw_hourly/audusd.csv', header = FALSE)
 colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
 
