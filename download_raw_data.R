@@ -1,9 +1,11 @@
+# VARIABLES
 temp_path = "~/Git/marketalgo/temp/"
 urls_hourly = "~/Git/marketalgo/download_links/DownloadLinksHourly.csv"
-destination_path_hourly = "~/Git/marketalgo/data_qc_raw_hourly"
+destination_path_hourly = "~/Git/marketalgo/data_qc_hourly"
 urls_daily = "~/Git/marketalgo/download_links/DownloadLinksDaily.csv"
-destination_path_daily = "~/Git/marketalgo/data_qc_raw_daily"
+destination_path_daily = "~/Git/marketalgo/data_qc_daily"
 
+# DOWNLOAD HOURLY DATA
 print("Downloading hourly data...")
 data = read.csv(file = urls_hourly, header = TRUE)
 symbols <- data[['Symbol']]
@@ -19,6 +21,7 @@ for(i in urls) {
   file.remove(temp_destination)
 }
 
+# DOWNLOAD DAILY DATA
 print("Downloading daily data...")
 data = read.csv(file = urls_daily, header = TRUE)
 symbols <- data[['Symbol']]
