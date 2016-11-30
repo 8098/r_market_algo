@@ -1,33 +1,51 @@
 # VARIABLES
-directories <- c("~/Git/marketalgo/data_qc_hourly/", "~/Git/marketalgo/data_qc_daily/")
+source_hourly <- "~/Git/marketalgo/data_qc_raw_hourly/"
+source_daily <-"~/Git/marketalgo/data_qc_raw_daily/"
+destination_hourly <- "~/Git/marketalgo/data_qc_hourly/"
+destination_daily <-"~/Git/marketalgo/data_qc_daily/"
 
-# GET FILES IN DIRECTORY
-for (i in 1:length(directories)) {
-  current_dir <- directories[i]
-  print(current_dir)
+# HOURLY DATA - GET DATA IN FILE, ADD HEADERS, REMOVE UNUSED COLUMNS AND OVERWRITE
+print(source_hourly)
+files <- list.files(source_hourly, pattern = "csv", full.names = TRUE)
+for (i in 1:length(files)) {
+  current_file <- files[i]
+  print(current_file)
 
-  files <- list.files(current_dir, pattern = "csv", full.names = TRUE)
+  filename <- paste(source_hourly, basename(current_file), sep = "")
+  new_filename <- paste(destination_hourly, basename(current_file), sep = "")
+  print(new_filename)
+
+  data <- read.table(current_file, header = FALSE, sep = ",")
+  data <- data[,c(1:5)]
+  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
+
+  write.table(
+    data,
+    file = new_filename,
+    sep = ",",
+    row.names = FALSE
+  )
+}
+
+# DAILY DATA - GET DATA IN FILE, ADD HEADERS, REMOVE UNUSED COLUMNS AND OVERWRITE
+print(source_daily)
+files <- list.files(source_daily, pattern = "csv", full.names = TRUE)
+for (i in 1:length(files)) {
+  current_file <- files[i]
+  print(current_file)
   
-  # GET DATA IN FILE, ADD HEADERS, REMOVE UNUSED COLUMNS AND OVERWRITE
-  for (i in 1:length(files)) {
-    current_file <- files[i]
-    print(current_file)
+  filename <- paste(source_daily, basename(current_file), sep = "")
+  new_filename <- paste(destination_daily, basename(current_file), sep = "")
+  print(new_filename)
   
-    filename <- paste(current_dir, basename(current_file), sep = "")
-    new_filename <- paste(current_dir, "new_", basename(current_file), sep = "")
+  data <- read.table(current_file, header = FALSE, sep = ",")
+  data <- data[,c(1:5)]
+  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
   
-    data <- read.table(current_file, header = FALSE, sep = ",")
-    data <- data[,c(1:5)]
-    colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
-  
-    write.table(
-      data,
-      file = new_filename,
-      sep = ",",
-      row.names = FALSE
-    )
-  
-    file.remove(filename)
-    file.rename(new_filename, filename)
-  }
+  write.table(
+    data,
+    file = new_filename,
+    sep = ",",
+    row.names = FALSE
+  )
 }
