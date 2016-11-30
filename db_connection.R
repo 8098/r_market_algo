@@ -1,5 +1,6 @@
 require(RODBC)
 
+start
 file = "~/Git/marketalgo/test/audusd.csv"
 data = read.csv(file = file, header = FALSE)
 colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
