@@ -17,7 +17,7 @@ sqlSave(connection, data, tablename = 'dbo.Test2', append = TRUE, rownames = FAL
 
 # driver <- dbDriver("SqlServer")
 # connection <- dbConnect(driver, url = "server=138.68.59.249;database=MarketAlgo;user=sa;password=LukeSkywalker!")
-# dbBulkCopy(connection, "[dbo].[Test2]", value = data)
+# dbBulkCopy(connection, "[dbo].[Test2]", value = file)
 
 end.time <- proc.time()
 duration.time <- end.time - start.time
