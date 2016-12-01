@@ -1,8 +1,9 @@
 # VARIABLES
+start_time <- Sys.time()
 temp_path = "~/Git/marketalgo/temp/"
-urls_hourly = "~/Git/marketalgo/download_links/DownloadLinksHourly.csv"
+urls_hourly = "~/Git/marketalgo/supporting_files/DownloadLinksHourly.csv"
 destination_path_hourly = "~/Git/marketalgo/data_qc_raw_hourly"
-urls_daily = "~/Git/marketalgo/download_links/DownloadLinksDaily.csv"
+urls_daily = "~/Git/marketalgo/supporting_files/DownloadLinksDaily.csv"
 destination_path_daily = "~/Git/marketalgo/data_qc_raw_daily"
 
 # DOWNLOAD HOURLY DATA
@@ -36,3 +37,5 @@ for(i in urls) {
   unzip(zipfile = temp_destination, exdir = destination)
   file.remove(temp_destination)
 }
+
+print(Sys.time() - start_time)

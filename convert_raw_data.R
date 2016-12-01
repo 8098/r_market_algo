@@ -1,4 +1,5 @@
 # VARIABLES
+start_time <- Sys.time()
 source_hourly <- "~/Git/marketalgo/data_qc_raw_hourly/"
 source_daily <-"~/Git/marketalgo/data_qc_raw_daily/"
 destination_hourly <- "~/Git/marketalgo/data_qc_hourly/"
@@ -49,3 +50,5 @@ for (i in 1:length(files)) {
     row.names = FALSE
   )
 }
+
+print(Sys.time() - start_time)
