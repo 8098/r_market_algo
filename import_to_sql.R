@@ -1,8 +1,4 @@
 require(RODBC)
-# require(rsqlserver)
-# require(devtools)
-# install_github("jmp75/rClr", build_vignettes=TRUE)
-# install_github('agstudy/rsqlserver', build_vignettes=TRUE) 
 
 # VARIABLES
 start_time <- Sys.time()
