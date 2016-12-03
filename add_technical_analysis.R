@@ -1,10 +1,11 @@
 require(TTR)
 require(quantmod)
+require(tseries)
 
 # VARIABLES
 start_time <- Sys.time()
-directory_hourly = "~/Git/marketalgo/data_qc_hourly/"
-directory_daily = "~/Git/marketalgo/data_qc_daily/"
+directory_hourly = "~/marketalgo/data_qc_hourly/"
+directory_daily = "~/marketalgo/data_qc_daily/"
 
 # HOURLY DATA - GET TA COLUMNS AND OVERWRITE
 print(directory_hourly)
@@ -30,13 +31,16 @@ for (i in 1:length(files)) {
   SlowRSI <- EMA(RSI(data[,('Close')], 20), 10)
   MACD <- MACD(data[,('Close')], 10, 20, 10, percent = FALSE)
   
-  Change <- Delt(data$Close) * 100
-  EMAChange <- Delt(EMA) * 100
-  RSIChange <- Delt(RSI) * 100
-  SlowRSIChange <- Delt(SlowRSI) * 100
-  MACDChange <- Delt(MACD) * 100
+  data = data.frame(data, EMA, RSI, SlowRSI, MACD)
   
-  data = data.frame(data, Change, EMA, EMAChange, RSI, RSIChange, SlowRSI, SlowRSIChange, MACD, MACDChange)
+  Change <- Delt(data$Close) * 100
+  EMAChange <- Delt(data$EMA) * 100
+  RSIChange <- Delt(data$RSI) * 100
+  SlowRSIChange <- Delt(data$SlowRSI) * 100
+  MACDChange <- Delt(data$macd) * 100
+  
+  data = data.frame(data, Change, EMAChange, RSIChange, SlowRSIChange, MACDChange)
+  
   names(data)[names(data) == 'macd'] <- 'MACD'
   names(data)[names(data) == 'Delt.1.arithmetic'] <- 'Change'
   names(data)[names(data) == 'Delt.1.arithmetic.1'] <- 'EMAChange'
@@ -84,13 +88,16 @@ for (i in 1:length(files)) {
   SlowRSI <- EMA(RSI(data[,('Close')], 20), 10)
   MACD <- MACD(data[,('Close')], 10, 20, 10, percent = FALSE)
   
-  Change <- Delt(data$Close) * 100
-  EMAChange <- Delt(EMA) * 100
-  RSIChange <- Delt(RSI) * 100
-  SlowRSIChange <- Delt(SlowRSI) * 100
-  MACDChange <- Delt(MACD) * 100
+  data = data.frame(data, EMA, RSI, SlowRSI, MACD)
   
-  data = data.frame(data, Change, EMA, EMAChange, RSI, RSIChange, SlowRSI, SlowRSIChange, MACD, MACDChange)
+  Change <- Delt(data$Close) * 100
+  EMAChange <- Delt(data$EMA) * 100
+  RSIChange <- Delt(data$RSI) * 100
+  SlowRSIChange <- Delt(data$SlowRSI) * 100
+  MACDChange <- Delt(data$macd) * 100
+  
+  data = data.frame(data, Change, EMAChange, RSIChange, SlowRSIChange, MACDChange)
+  
   names(data)[names(data) == 'macd'] <- 'MACD'
   names(data)[names(data) == 'Delt.1.arithmetic'] <- 'Change'
   names(data)[names(data) == 'Delt.1.arithmetic.1'] <- 'EMAChange'

@@ -1,19 +1,29 @@
 # VARIABLES
 start_time <- Sys.time()
-temp_path = "~/Git/marketalgo/temp/"
-urls_hourly = "~/Git/marketalgo/supporting_files/DownloadLinksHourly.csv"
-destination_path_hourly = "~/Git/marketalgo/data_qc_raw_hourly"
-urls_daily = "~/Git/marketalgo/supporting_files/DownloadLinksDaily.csv"
-destination_path_daily = "~/Git/marketalgo/data_qc_raw_daily"
+temp_path = "~/marketalgo/temp/"
+urls_hourly = "~/marketalgo/supporting_files/DownloadLinksHourly.csv"
+urls_daily = "~/marketalgo/supporting_files/DownloadLinksDaily.csv"
+destination_hourly = "~/marketalgo/data_qc_raw_hourly"
+destination_daily = "~/marketalgo/data_qc_raw_daily"
 
-# DOWNLOAD HOURLY DATA
+# HOURLY DATA - DELETE EXISTING FILES
+print(destination_hourly)
+files <- list.files(destination_hourly, pattern = "csv", full.names = TRUE)
+for (i in 1:length(files)) {
+  current_file <- files[i]
+  print(current_file)
+  
+  file.remove(current_file)
+}
+
+# HOURLY DATA - DOWNLOAD
 print("Downloading hourly data...")
 data = read.csv(file = urls_hourly, header = TRUE)
 symbols <- data[['Symbol']]
 urls <- data[['URL']]
 for(i in urls) {
   temp_destination <- paste(temp_path, basename(i), sep = "")
-  destination <- destination_path_hourly
+  destination <- destination_hourly
   print(paste("URL:", i))
   print(paste("Temp Destination:", temp_destination))
   download.file(url = i, destfile = temp_destination, quiet = TRUE)
@@ -22,14 +32,14 @@ for(i in urls) {
   file.remove(temp_destination)
 }
 
-# DOWNLOAD DAILY DATA
+# DAILY DATA - DOWNLOAD
 print("Downloading daily data...")
 data = read.csv(file = urls_daily, header = TRUE)
 symbols <- data[['Symbol']]
 urls <- data[['URL']]
 for(i in urls) {
   temp_destination <- paste(temp_path, basename(i), sep = "")
-  destination <- destination_path_daily
+  destination <- destination_daily
   print(paste("URL:", i))
   print(paste("Temp Destination:", temp_destination))
   download.file(url = i, destfile = temp_destination, quiet = TRUE)

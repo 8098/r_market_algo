@@ -1,9 +1,19 @@
 # VARIABLES
 start_time <- Sys.time()
-source_hourly <- "~/Git/marketalgo/data_qc_raw_hourly/"
-source_daily <-"~/Git/marketalgo/data_qc_raw_daily/"
-destination_hourly <- "~/Git/marketalgo/data_qc_hourly/"
-destination_daily <-"~/Git/marketalgo/data_qc_daily/"
+source_hourly <- "~/marketalgo/data_qc_raw_hourly/"
+source_daily <-"~/marketalgo/data_qc_raw_daily/"
+destination_hourly <- "~/marketalgo/data_qc_hourly/"
+destination_daily <-"~/marketalgo/data_qc_daily/"
+
+# HOURLY DATA - DELETE EXISTING FILES
+print(destination_hourly)
+files <- list.files(destination_hourly, pattern = "csv", full.names = TRUE)
+for (i in 1:length(files)) {
+  current_file <- files[i]
+  print(current_file)
+  
+  file.remove(current_file)
+}
 
 # HOURLY DATA - GET DATA IN FILE, ADD HEADERS, REMOVE UNUSED COLUMNS AND OVERWRITE
 print(source_hourly)
@@ -26,6 +36,16 @@ for (i in 1:length(files)) {
     sep = ",",
     row.names = FALSE
   )
+}
+
+# DAILY DATA - DELETE EXISTING FILES
+print(destination_daily)
+files <- list.files(destination_daily, pattern = "csv", full.names = TRUE)
+for (i in 1:length(files)) {
+  current_file <- files[i]
+  print(current_file)
+  
+  file.remove(current_file)
 }
 
 # DAILY DATA - GET DATA IN FILE, ADD HEADERS, REMOVE UNUSED COLUMNS AND OVERWRITE

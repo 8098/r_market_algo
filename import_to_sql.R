@@ -2,11 +2,11 @@ require(RODBC)
 
 # VARIABLES
 start_time <- Sys.time()
-directory_hourly = "~/Git/marketalgo/data_qc_hourly/"
-directory_daily = "~/Git/marketalgo/data_qc_daily/"
+directory_hourly = "~/marketalgo/data_qc_hourly/"
+directory_daily = "~/marketalgo/data_qc_daily/"
 table_hourly = "ImportQCHourly"
 table_daily = "ImportQCDaily"
-connection <- odbcDriverConnect("Driver={SQL Server};server=localhost;database=MarketAlgo;uid=sa;pwd=LukeSkywalker!")
+connection <- odbcDriverConnect("Driver={ODBC Driver 13 for SQL Server};server=localhost;database=MarketAlgo;uid=sa;pwd=LukeSkywalker!")
 
 # HOURLY DATA - INSERT DATA TO SQL TABLE
 print(directory_hourly)
