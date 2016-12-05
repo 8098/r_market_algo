@@ -11,7 +11,7 @@ files <- list.files(destination_hourly, pattern = "csv", full.names = TRUE)
 for (i in 1:length(files)) {
   current_file <- files[i]
   print(current_file)
-  
+
   file.remove(current_file)
 }
 
@@ -28,7 +28,9 @@ for (i in 1:length(files)) {
 
   data <- read.table(current_file, header = FALSE, sep = ",")
   data <- data[,c(1:5)]
-  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
+  data$Row <- seq.int(nrow(data))
+  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close', 'Row')
+  data <- data[c('Row', 'Timestamp', 'Open', 'High', 'Low', 'Close')]
 
   write.table(
     data,
@@ -61,7 +63,9 @@ for (i in 1:length(files)) {
   
   data <- read.table(current_file, header = FALSE, sep = ",")
   data <- data[,c(1:5)]
-  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close')
+  data$Row <- seq.int(nrow(data))
+  colnames(data) <- c('Timestamp', 'Open', 'High', 'Low', 'Close', 'Row')
+  data <- data[c('Row', 'Timestamp', 'Open', 'High', 'Low', 'Close')]
   
   write.table(
     data,

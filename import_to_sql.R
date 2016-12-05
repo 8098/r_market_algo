@@ -15,10 +15,10 @@ sqlClear(connection, table_hourly)
 for (i in 1:length(files)) {
   current_file <- files[i]
   print(current_file)
-
+  
   data = read.csv(file = current_file, header = TRUE, sep = ",")
   sqlSave(connection, data, tablename = table_hourly, append = TRUE, rownames = FALSE, fast = TRUE)
-}
+} 
 
 # DAILY DATA - INSERT DATA TO SQL TABLE
 print(directory_daily)

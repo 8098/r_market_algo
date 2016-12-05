@@ -1,6 +1,5 @@
 require(TTR)
 require(quantmod)
-require(tseries)
 
 # VARIABLES
 start_time <- Sys.time()
@@ -47,10 +46,10 @@ for (i in 1:length(files)) {
   names(data)[names(data) == 'Delt.1.arithmetic.2'] <- 'RSIChange'
   names(data)[names(data) == 'Delt.1.arithmetic.3'] <- 'SlowRSIChange'
   names(data)[names(data) == 'Delt.1.arithmetic.4'] <- 'MACDChange'
-  data <- subset(data, select = -c(signal) )
-  data <- data[c('Symbol', 'Timestamp', 'Date', 'Time', 'Open', 'High', 'Low'
-         , 'Close', 'HL2', 'CandleSize', 'Change', 'EMA', 'EMAChange', 'RSI'
-         , 'RSIChange', 'SlowRSI', 'SlowRSIChange', 'MACD', 'MACDChange')]
+  data <- subset(data, select = -c(signal))
+  data <- data[c('Symbol', 'Row', 'Timestamp', 'Date', 'Time', 'Open', 'High', 'Low'
+                 , 'Close', 'HL2', 'CandleSize', 'Change', 'EMA', 'EMAChange', 'RSI'
+                 , 'RSIChange', 'SlowRSI', 'SlowRSIChange', 'MACD', 'MACDChange')]
   
   write.table(
     data,
@@ -59,7 +58,7 @@ for (i in 1:length(files)) {
     sep = ",",
     row.names = FALSE
   )
-
+  
   file.remove(current_file)
   file.rename(new_filename, current_file)
 }
@@ -70,12 +69,12 @@ files <- list.files(directory_daily, pattern = "csv", full.names = TRUE)
 for (i in 1:length(files)) {
   current_file <- files[i]
   print(current_file)
-
+  
   new_filename <- paste(directory_daily, "new_", basename(current_file), sep = "")
   print(new_filename)
-
+  
   data = read.csv(file = current_file)
-
+  
   data$Symbol <- substr(basename(current_file), 1, nchar(basename(current_file)) - 4)
   data$Timestamp <- as.POSIXct(data$Timestamp, format="%Y%m%d %H:%M")
   data$Date <- strftime(data$Timestamp, "%Y-%m-%d")
@@ -105,10 +104,10 @@ for (i in 1:length(files)) {
   names(data)[names(data) == 'Delt.1.arithmetic.3'] <- 'SlowRSIChange'
   names(data)[names(data) == 'Delt.1.arithmetic.4'] <- 'MACDChange'
   data <- subset(data, select = -c(signal) )
-  data <- data[c('Symbol', 'Timestamp', 'Date', 'Time', 'Open', 'High', 'Low'
+  data <- data[c('Symbol', 'Row', 'Timestamp', 'Date', 'Time', 'Open', 'High', 'Low'
                  , 'Close', 'HL2', 'CandleSize', 'Change', 'EMA', 'EMAChange', 'RSI'
                  , 'RSIChange', 'SlowRSI', 'SlowRSIChange', 'MACD', 'MACDChange')]
-
+  
   write.table(
     data,
     file = new_filename,
@@ -116,7 +115,7 @@ for (i in 1:length(files)) {
     sep = ",",
     row.names = FALSE
   )
-
+  
   file.remove(current_file)
   file.rename(new_filename, current_file)
 }
