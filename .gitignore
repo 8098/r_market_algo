@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+data_qc_hourly/
+data_qc_daily/
+data_qc_raw_hourly/
+data_qc_raw_daily/
