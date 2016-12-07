@@ -2,7 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-data_qc_hourly/
-data_qc_daily/
-data_qc_raw_hourly/
-data_qc_raw_daily/
+data_qc_hourly/*.csv
+data_qc_daily/*.csv
+data_qc_raw_hourly/*.csv
+data_qc_raw_daily/*.csv
