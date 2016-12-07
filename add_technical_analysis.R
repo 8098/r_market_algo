@@ -23,7 +23,7 @@ for (i in 1:length(files)) {
   data$Date <- strftime(data$Timestamp, "%Y-%m-%d")
   data$Time <- strftime(data$Timestamp, "%H:%M")
   data$HL2 <- (data$High + data$Low) / 2
-  data$CandleSize <- (data$High - data$Low) / data$Close
+  data$CandleSize <- (data$High - data$Low) / data$Close * 100
   
   EMA <- EMA(data[,('Close')], 10)
   RSI <- RSI(data[,('Close')], 20)
