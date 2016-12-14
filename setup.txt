@@ -1,0 +1,28 @@
+# install r
+sudo apt-get install r-base r-dev
+
+#install rstudio
+sudo apt-get install gdebi-core
+wget https://download2.rstudio.org/rstudio-server-1.0.44-amd64.deb
+sudo gdebi rstudio-server-1.0.44-amd64.deb
+
+# r packages
+install.packages('devtools', dependencies = TRUE)
+install.packages('RODBC', dependencies = TRUE)
+install.packages('dplyr', dependencies = TRUE)
+install.packages('caret', dependencies = TRUE)
+install.packages('pROC', dependencies = TRUE)
+install.packages('TTR', dependencies = TRUE)
+install.packages('quantmod', dependencies = TRUE)
+install.packages('DataCombine', dependencies = TRUE)
+install.packages('Hmisc', dependencies = TRUE)
+install.packages('doMC', dependencies = TRUE)
+
+# odbc driver for mssql
+sudo su 
+curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
+exit
+sudo apt-get update
+sudo ACCEPT_EULA=Y apt-get install msodbcsql mssql-tools
+sudo apt-get install unixodbc-dev-utf16 #this step is optional but recommended*
