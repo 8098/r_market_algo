@@ -24,6 +24,7 @@ for (i in 1:length(files)) {
   data$Timestamp <- as.POSIXct(data$Timestamp, format="%Y%m%d %H:%M")
   data$Year <- strftime(data$Timestamp, "%Y")
   data$Month <- strftime(data$Timestamp, "%b")
+  data$Day <- strftime(data$Timestamp, "%a")
   data$Date <- strftime(data$Timestamp, "%Y-%m-%d")
   data$Time <- strftime(data$Timestamp, "%H:%M")
   data$HL2 <- (data$High + data$Low) / 2
@@ -39,12 +40,12 @@ for (i in 1:length(files)) {
   data = data.frame(data, EMA, RSI, SlowRSI, MACD)
   
   Change1Period <- Delt(data$Close) * 100
-  Change5Period <- Delt(data$Open, data$Close, k = 5) * 100
-  Change10Period <- Delt(data$Open, data$Close, k = 10) * 100
-  Change25Period <- Delt(data$Open, data$Close, k = 25) * 100
-  Change50Period <- Delt(data$Open, data$Close, k = 50) * 100
-  Change100Period <- Delt(data$Open, data$Close, k = 100) * 100
-  Change200Period <- Delt(data$Open, data$Close, k = 200) * 100
+  Change5Period <- Delt(data$Close, k = 5) * 100
+  Change10Period <- Delt(data$Close, k = 10) * 100
+  Change25Period <- Delt(data$Close, k = 25) * 100
+  Change50Period <- Delt(data$Close, k = 50) * 100
+  Change100Period <- Delt(data$Close, k = 100) * 100
+  Change200Period <- Delt(data$Close, k = 200) * 100
   colnames(Change1Period) <- c('Change1Period')
   colnames(Change5Period) <- c('Change5Period')
   colnames(Change10Period) <- c('Change10Period')
@@ -56,17 +57,41 @@ for (i in 1:length(files)) {
   ChangeFuture1 <- lead(Change1Period, 1)
   colnames(ChangeFuture1) <- c('ChangeFuture1')
   
-  EMAChange <- Delt(data$EMA) * 100
-  RSIChange <- Delt(data$RSI) * 100
-  SlowRSIChange <- Delt(data$SlowRSI) * 100
-  MACDChange <- Delt(data$MACD) * 100
-  colnames(EMAChange) <- c('EMAChange')
-  colnames(RSIChange) <- c('RSIChange')
-  colnames(SlowRSIChange) <- c('SlowRSIChange')
-  colnames(MACDChange) <- c('MACDChange')
+  ChangeEMA <- Delt(data$EMA) * 100
+  ChangeRSI <- Delt(data$RSI) * 100
+  ChangeSlowRSI <- Delt(data$SlowRSI) * 100
+  ChangeMACD <- Delt(data$MACD) * 100
+  colnames(ChangeEMA) <- c('ChangeEMA')
+  colnames(ChangeRSI) <- c('ChangeRSI')
+  colnames(ChangeSlowRSI) <- c('ChangeSlowRSI')
+  colnames(ChangeMACD) <- c('ChangeMACD')
   
   data = data.frame(data, Change1Period, Change5Period, Change10Period, Change25Period, Change50Period, Change100Period, Change200Period,
-    EMAChange, RSIChange, SlowRSIChange, MACDChange, ChangeFuture1)
+    ChangeEMA, ChangeRSI, ChangeSlowRSI, ChangeMACD, ChangeFuture1)
+  
+  data$ClassChange1Period <- ifelse(data$Change1Period > 0, 1, 0)
+  data$ClassChange5Period <- ifelse(data$Change5Period > 0, 1, 0)
+  data$ClassChange10Period <- ifelse(data$Change10Period > 0, 1, 0)
+  data$ClassChange25Period <- ifelse(data$Change25Period > 0, 1, 0)
+  data$ClassChange50Period <- ifelse(data$Change50Period > 0, 1, 0)
+  data$ClassChange100Period <- ifelse(data$Change100Period > 0, 1, 0)
+  data$ClassChange200Period <- ifelse(data$Change200Period > 0, 1, 0)
+  data$ClassChangeEMA <- ifelse(data$ChangeEMA > 0, 1, 0)
+  data$ClassChangeRSI <- ifelse(data$ChangeRSI > 0, 1, 0)
+  data$ClassChangeSlowRSI <- ifelse(data$ChangeSlowRSI > 0, 1, 0)
+  data$ClassChangeMACD <- ifelse(data$ChangeMACD > 0, 1, 0)
+  
+  data$ConsecChange1Period <- sequence(rle(ifelse(data$Change1Period > 0, 1, 0))$lengths)
+  data$ConsecChange5Period <- sequence(rle(ifelse(data$Change5Period > 0, 1, 0))$lengths)
+  data$ConsecChange10Period <- sequence(rle(ifelse(data$Change10Period > 0, 1, 0))$lengths)
+  data$ConsecChange25Period <- sequence(rle(ifelse(data$Change25Period > 0, 1, 0))$lengths)
+  data$ConsecChange50Period <- sequence(rle(ifelse(data$Change50Period > 0, 1, 0))$lengths)
+  data$ConsecChange100Period <- sequence(rle(ifelse(data$Change100Period > 0, 1, 0))$lengths)
+  data$ConsecChange200Period <- sequence(rle(ifelse(data$Change200Period > 0, 1, 0))$lengths)
+  data$ConsecChangeEMA <- sequence(rle(ifelse(data$ChangeEMA > 0, 1, 0))$lengths)
+  data$ConsecChangeRSI <- sequence(rle(ifelse(data$ChangeRSI > 0, 1, 0))$lengths)
+  data$ConsecChangeSlowRSI <- sequence(rle(ifelse(data$ChangeSlowRSI > 0, 1, 0))$lengths)
+  data$ConsecChangeMACD <- sequence(rle(ifelse(data$ChangeMACD > 0, 1, 0))$lengths)
   
   data <- slide(data, Var = 'Change5Period', NewVar = 'ChangeFuture5', slideBy = 5, reminder = FALSE)
   data <- slide(data, Var = 'Change10Period', NewVar = 'ChangeFuture10', slideBy = 10, reminder = FALSE)
@@ -75,9 +100,14 @@ for (i in 1:length(files)) {
   data <- slide(data, Var = 'Change100Period', NewVar = 'ChangeFuture100', slideBy = 100, reminder = FALSE)
   data <- slide(data, Var = 'Change200Period', NewVar = 'ChangeFuture200', slideBy = 200, reminder = FALSE)
   
-  data <- data[c('Symbol', 'Row', 'Timestamp', 'Year', 'Month', 'Date', 'Time', 'Open', 'High', 'Low', 'Close', 'HL2', 'CandleSize'
+  data <- data[c('Symbol', 'Row', 'Timestamp', 'Year', 'Month', 'Day', 'Date', 'Time', 'Open', 'High', 'Low', 'Close', 'HL2', 'CandleSize'
+    , 'EMA', 'RSI', 'SlowRSI', 'MACD'
     , 'Change1Period', 'Change5Period', 'Change10Period', 'Change25Period', 'Change50Period', 'Change100Period', 'Change200Period'
-    , 'EMA', 'EMAChange', 'RSI', 'RSIChange', 'SlowRSI', 'SlowRSIChange', 'MACD', 'MACDChange'
+    , 'ChangeEMA', 'ChangeRSI', 'ChangeSlowRSI', 'ChangeMACD'
+    , 'ClassChange1Period', 'ClassChange5Period', 'ClassChange10Period', 'ClassChange25Period', 'ClassChange50Period', 'ClassChange100Period', 'ClassChange200Period'
+    , 'ClassChangeEMA', 'ClassChangeRSI', 'ClassChangeSlowRSI', 'ClassChangeMACD'
+    , 'ConsecChange1Period', 'ConsecChange5Period', 'ConsecChange10Period', 'ConsecChange25Period', 'ConsecChange50Period', 'ConsecChange100Period', 'ConsecChange200Period'
+    , 'ConsecChangeEMA', 'ConsecChangeRSI', 'ConsecChangeSlowRSI', 'ConsecChangeMACD'
     , 'ChangeFuture1', 'ChangeFuture5', 'ChangeFuture10', 'ChangeFuture25', 'ChangeFuture50', 'ChangeFuture100', 'ChangeFuture200')]
   
   write.table(
@@ -108,6 +138,7 @@ for (i in 1:length(files)) {
   data$Timestamp <- as.POSIXct(data$Timestamp, format="%Y%m%d %H:%M")
   data$Year <- strftime(data$Timestamp, "%Y")
   data$Month <- strftime(data$Timestamp, "%b")
+  data$Day <- strftime(data$Timestamp, "%a")
   data$Date <- strftime(data$Timestamp, "%Y-%m-%d")
   data$Time <- strftime(data$Timestamp, "%H:%M")
   data$HL2 <- (data$High + data$Low) / 2
@@ -123,12 +154,12 @@ for (i in 1:length(files)) {
   data = data.frame(data, EMA, RSI, SlowRSI, MACD)
   
   Change1Period <- Delt(data$Close) * 100
-  Change5Period <- Delt(data$Open, data$Close, k = 5) * 100
-  Change10Period <- Delt(data$Open, data$Close, k = 10) * 100
-  Change25Period <- Delt(data$Open, data$Close, k = 25) * 100
-  Change50Period <- Delt(data$Open, data$Close, k = 50) * 100
-  Change100Period <- Delt(data$Open, data$Close, k = 100) * 100
-  Change200Period <- Delt(data$Open, data$Close, k = 200) * 100
+  Change5Period <- Delt(data$Close, k = 5) * 100
+  Change10Period <- Delt(data$Close, k = 10) * 100
+  Change25Period <- Delt(data$Close, k = 25) * 100
+  Change50Period <- Delt(data$Close, k = 50) * 100
+  Change100Period <- Delt(data$Close, k = 100) * 100
+  Change200Period <- Delt(data$Close, k = 200) * 100
   colnames(Change1Period) <- c('Change1Period')
   colnames(Change5Period) <- c('Change5Period')
   colnames(Change10Period) <- c('Change10Period')
@@ -140,17 +171,41 @@ for (i in 1:length(files)) {
   ChangeFuture1 <- lead(Change1Period, 1)
   colnames(ChangeFuture1) <- c('ChangeFuture1')
   
-  EMAChange <- Delt(data$EMA) * 100
-  RSIChange <- Delt(data$RSI) * 100
-  SlowRSIChange <- Delt(data$SlowRSI) * 100
-  MACDChange <- Delt(data$MACD) * 100
-  colnames(EMAChange) <- c('EMAChange')
-  colnames(RSIChange) <- c('RSIChange')
-  colnames(SlowRSIChange) <- c('SlowRSIChange')
-  colnames(MACDChange) <- c('MACDChange')
+  ChangeEMA <- Delt(data$EMA) * 100
+  ChangeRSI <- Delt(data$RSI) * 100
+  ChangeSlowRSI <- Delt(data$SlowRSI) * 100
+  ChangeMACD <- Delt(data$MACD) * 100
+  colnames(ChangeEMA) <- c('ChangeEMA')
+  colnames(ChangeRSI) <- c('ChangeRSI')
+  colnames(ChangeSlowRSI) <- c('ChangeSlowRSI')
+  colnames(ChangeMACD) <- c('ChangeMACD')
   
   data = data.frame(data, Change1Period, Change5Period, Change10Period, Change25Period, Change50Period, Change100Period, Change200Period,
-                    EMAChange, RSIChange, SlowRSIChange, MACDChange, ChangeFuture1)
+                    ChangeEMA, ChangeRSI, ChangeSlowRSI, ChangeMACD, ChangeFuture1)
+  
+  data$ClassChange1Period <- ifelse(data$Change1Period > 0, 1, 0)
+  data$ClassChange5Period <- ifelse(data$Change5Period > 0, 1, 0)
+  data$ClassChange10Period <- ifelse(data$Change10Period > 0, 1, 0)
+  data$ClassChange25Period <- ifelse(data$Change25Period > 0, 1, 0)
+  data$ClassChange50Period <- ifelse(data$Change50Period > 0, 1, 0)
+  data$ClassChange100Period <- ifelse(data$Change100Period > 0, 1, 0)
+  data$ClassChange200Period <- ifelse(data$Change200Period > 0, 1, 0)
+  data$ClassChangeEMA <- ifelse(data$ChangeEMA > 0, 1, 0)
+  data$ClassChangeRSI <- ifelse(data$ChangeRSI > 0, 1, 0)
+  data$ClassChangeSlowRSI <- ifelse(data$ChangeSlowRSI > 0, 1, 0)
+  data$ClassChangeMACD <- ifelse(data$ChangeMACD > 0, 1, 0)
+  
+  data$ConsecChange1Period <- sequence(rle(ifelse(data$Change1Period > 0, 1, 0))$lengths)
+  data$ConsecChange5Period <- sequence(rle(ifelse(data$Change5Period > 0, 1, 0))$lengths)
+  data$ConsecChange10Period <- sequence(rle(ifelse(data$Change10Period > 0, 1, 0))$lengths)
+  data$ConsecChange25Period <- sequence(rle(ifelse(data$Change25Period > 0, 1, 0))$lengths)
+  data$ConsecChange50Period <- sequence(rle(ifelse(data$Change50Period > 0, 1, 0))$lengths)
+  data$ConsecChange100Period <- sequence(rle(ifelse(data$Change100Period > 0, 1, 0))$lengths)
+  data$ConsecChange200Period <- sequence(rle(ifelse(data$Change200Period > 0, 1, 0))$lengths)
+  data$ConsecChangeEMA <- sequence(rle(ifelse(data$ChangeEMA > 0, 1, 0))$lengths)
+  data$ConsecChangeRSI <- sequence(rle(ifelse(data$ChangeRSI > 0, 1, 0))$lengths)
+  data$ConsecChangeSlowRSI <- sequence(rle(ifelse(data$ChangeSlowRSI > 0, 1, 0))$lengths)
+  data$ConsecChangeMACD <- sequence(rle(ifelse(data$ChangeMACD > 0, 1, 0))$lengths)
   
   data <- slide(data, Var = 'Change5Period', NewVar = 'ChangeFuture5', slideBy = 5, reminder = FALSE)
   data <- slide(data, Var = 'Change10Period', NewVar = 'ChangeFuture10', slideBy = 10, reminder = FALSE)
@@ -159,9 +214,14 @@ for (i in 1:length(files)) {
   data <- slide(data, Var = 'Change100Period', NewVar = 'ChangeFuture100', slideBy = 100, reminder = FALSE)
   data <- slide(data, Var = 'Change200Period', NewVar = 'ChangeFuture200', slideBy = 200, reminder = FALSE)
   
-  data <- data[c('Symbol', 'Row', 'Timestamp', 'Year', 'Month', 'Date', 'Time', 'Open', 'High', 'Low', 'Close', 'HL2', 'CandleSize'
+  data <- data[c('Symbol', 'Row', 'Timestamp', 'Year', 'Month', 'Day', 'Date', 'Time', 'Open', 'High', 'Low', 'Close', 'HL2', 'CandleSize'
+                 , 'EMA', 'RSI', 'SlowRSI', 'MACD'
                  , 'Change1Period', 'Change5Period', 'Change10Period', 'Change25Period', 'Change50Period', 'Change100Period', 'Change200Period'
-                 , 'EMA', 'EMAChange', 'RSI', 'RSIChange', 'SlowRSI', 'SlowRSIChange', 'MACD', 'MACDChange'
+                 , 'ChangeEMA', 'ChangeRSI', 'ChangeSlowRSI', 'ChangeMACD'
+                 , 'ClassChange1Period', 'ClassChange5Period', 'ClassChange10Period', 'ClassChange25Period', 'ClassChange50Period', 'ClassChange100Period', 'ClassChange200Period'
+                 , 'ClassChangeEMA', 'ClassChangeRSI', 'ClassChangeSlowRSI', 'ClassChangeMACD'
+                 , 'ConsecChange1Period', 'ConsecChange5Period', 'ConsecChange10Period', 'ConsecChange25Period', 'ConsecChange50Period', 'ConsecChange100Period', 'ConsecChange200Period'
+                 , 'ConsecChangeEMA', 'ConsecChangeRSI', 'ConsecChangeSlowRSI', 'ConsecChangeMACD'
                  , 'ChangeFuture1', 'ChangeFuture5', 'ChangeFuture10', 'ChangeFuture25', 'ChangeFuture50', 'ChangeFuture100', 'ChangeFuture200')]
   
   write.table(

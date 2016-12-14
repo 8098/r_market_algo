@@ -18,6 +18,7 @@ for (i in 1:length(files)) {
   
   data = read.csv(file = current_file, header = TRUE, sep = ",")
   sqlSave(connection, data, tablename = table_hourly, append = TRUE, rownames = FALSE, fast = TRUE)
+  odbcClose(connection)
 } 
 
 # DAILY DATA - INSERT DATA TO SQL TABLE
@@ -30,6 +31,7 @@ for (i in 1:length(files)) {
   
   data = read.csv(file = current_file, header = TRUE, sep = ",")
   sqlSave(connection, data, tablename = table_daily, append = TRUE, rownames = FALSE, fast = TRUE)
+  odbcClose(connection)
 }
 
 print(Sys.time() - start_time)
