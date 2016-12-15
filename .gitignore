@@ -6,3 +6,4 @@ data_qc_hourly/*.csv
 data_qc_daily/*.csv
 data_qc_raw_hourly/*.csv
 data_qc_raw_daily/*.csv
+predictions
