@@ -60,37 +60,38 @@ for (i in 1:length(symbols$Symbol)) {
   data <- data.frame(predict(dummy, newdata = data))
   
   ##### MODEL PREDICTION - GLMNET #####
-  method <- "glmnet"
-  
-  data[[outcomeName]] <- ifelse(data[[outcomeName]] > 0, 1, 0)
-  
-  predictorsNames <- names(data)[names(data) != outcomeName]
-  
-  splitIndex <- createDataPartition(data[[outcomeName]], p = .75, list = FALSE, times = 1)
-  trainDF <- data[ splitIndex,]
-  testDF  <- data[-splitIndex,]
-  
-  objControl <- trainControl(method = 'cv', number = 3, returnResamp = 'none')
-  objModel <- train(trainDF[,predictorsNames], trainDF[[outcomeName]], 
-                    method = method,  
-                    metric = "RMSE", 
-                    trControl = objControl)
-  
-  predictionsGlmnet <- predict(object = objModel, testDF[,predictorsNames])
-  
-  auc <- roc(testDF[[outcomeName]], predictionsGlmnet)
-  
-  ##### AGGREGATE RESULTS #####
-  var <- varImp(objModel, scale = FALSE)$importance
-  var$var <- rownames(var)
-  
-  resultsRelativeImportance <- rbind(resultsRelativeImportance, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-                                                   , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall))
-  
-  resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType, type = "accuracy"
-                                                 , result = postResample(pred = predictionsGlmnet, obs = testDF[[outcomeName]])[1], row.names = NULL))
-  resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-                                                 , type = "auc", result = as.numeric(auc$auc)))
+  # method <- "glmnet"
+  # 
+  # data[[outcomeName]] <- ifelse(data[[outcomeName]] > 0, 1, 0)
+  # 
+  # predictorsNames <- names(data)[names(data) != outcomeName]
+  # 
+  # splitIndex <- createDataPartition(data[[outcomeName]], p = .75, list = FALSE, times = 1)
+  # trainDF <- data[ splitIndex,]
+  # testDF  <- data[-splitIndex,]
+  # 
+  # objControl <- trainControl(method = 'cv', number = 3, returnResamp = 'none')
+  # objModel <- train(trainDF[,predictorsNames], trainDF[[outcomeName]], 
+  #                   method = method,  
+  #                   metric = "RMSE", 
+  #                   trControl = objControl)
+  # 
+  # predictionsGlmnet <- predict(object = objModel, testDF[,predictorsNames])
+  # 
+  # auc <- roc(testDF[[outcomeName]], predictionsGlmnet)
+  # 
+  # ##### AGGREGATE RESULTS #####
+  # var <- varImp(objModel, scale = FALSE)$importance
+  # var$var <- rownames(var)
+  # var <- var[order(-var$Overall),]
+  # 
+  # resultsRelativeImportance <- rbind(resultsRelativeImportance, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
+  #                                                  , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall))
+  # 
+  # resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType, type = "accuracy"
+  #                                                , result = postResample(pred = predictionsGlmnet, obs = testDF[[outcomeName]])[1], row.names = NULL))
+  # resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
+  #                                                , type = "auc", result = as.numeric(auc$auc)))
   
   ##### MODEL PREDICTION - GBM #####
   method <- "gbm"
@@ -118,6 +119,7 @@ for (i in 1:length(symbols$Symbol)) {
   ##### AGGREGATE RESULTS #####
   var <- varImp(objModel, scale = FALSE)$importance
   var$var <- rownames(var)
+  var <- var[order(-var$Overall),]
   
   resultsRelativeImportance <- rbind(resultsRelativeImportance, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
                                                    , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall))
@@ -126,8 +128,6 @@ for (i in 1:length(symbols$Symbol)) {
                                                  , result = postResample(pred = predictionsGbmRaw, obs = as.factor(testDF[[outcomeName]]))[1], row.names = NULL))
   resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
                                                  , type = "auc", result = as.numeric(auc$auc)))
-  
-  stop("STOP")
 }
 
 ##### WRITE RESULTS TO CSV #####
