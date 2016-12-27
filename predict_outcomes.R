@@ -2,15 +2,20 @@ require(RODBC)
 require(caret)
 require(pROC)
 require(doMC)
+require(plyr)
+require(dplyr)
 
 ##### VARIABLES #####
 set.seed(8098)
-registerDoMC(cores = 3)
+registerDoMC(cores = 6)
 start_time <- Sys.time()
 outcomeName <- "ChangeFuture5"
 file_destination <- "~/marketalgo/predictions/"
-resultsRelativeImportance <- data.frame(matrix(vector(), 0, 7, dimnames=list(c(), c("symbol", "outcomeName", "method", "model", "row", "var", "rel.imp"))), stringsAsFactors = FALSE)
-resultsModel <- data.frame(matrix(vector(), 0, 6, dimnames=list(c(), c("symbol", "outcomeName", "method", "model", "type", "result"))), stringsAsFactors = FALSE)
+train_split <- 0.75
+resultsRelativeImportance <- data.frame(matrix(vector(), 0, 8, dimnames=list(c(), c("symbol", "outcomeName", "method", "model", "row", "var", "rel.imp", "count"))), stringsAsFactors = FALSE)
+resultsModel <- data.frame(matrix(vector(), 0, 7, dimnames=list(c(), c("symbol", "outcomeName", "method", "model", "type", "result", "count"))), stringsAsFactors = FALSE)
+resultsTestPredictions <- data.frame(matrix(vector(), 0, 11, dimnames=list(c(), c("symbol", "outcomeName", "method", "model", "row", "result", "prediction", "prob.down", "prob.up"
+                                                                                  , "correct", "count"))), stringsAsFactors = FALSE)
 connection_string <- "Driver={ODBC Driver 13 for SQL Server};server=localhost;database=MarketAlgo;uid=sa;pwd=LukeSkywalker!"
 
 ##### GET SYMBOLS FROM SQL #####
@@ -24,97 +29,52 @@ for (i in 1:length(symbols$Symbol)) {
   
   ##### GET DATA FROM SQL #####
   connection <- odbcDriverConnect(connection_string)
-  data <- sqlQuery(connection, paste("SELECT * FROM QCHourlyAndDaily WHERE Symbol = '", symbol, "'", sep = ""))
+  rawSql <- sqlQuery(connection, paste("SELECT * FROM QCHourlyAndDaily WHERE Symbol = '", symbol, "'", sep = ""), rows_at_time = 1000)
   odbcClose(connection)
   
   
   ##### TRANSFORM DATA #####
-  data <- subset(data, select = -c(Symbol, Row, Timestamp, Year, Date, Open, High, Low, Close
-                                   , HL2, CandleSize, EMA, DailyHL2, DailyCandleSize, DailyEMA
-                                   , ChangeFuture1, ChangeFuture10, ChangeFuture25, ChangeFuture50, ChangeFuture100, ChangeFuture200))
+  data <- subset(rawSql, select = -c(Symbol, Timestamp, Year, Month, Day, Date, Time, Open, High, Low, Close, HL2, CandleSize, EMA20, EMA100, Change50Period, Change100Period, Change200Period
+                                   , DailyEMA20, DailyEMA100, DailyEMA20PricePosition, DailyEMA100PricePosition
+                                   , DailyChange5Period, DailyChange10Period, DailyChange15Period, DailyChange20Period, DailyChange50Period, DailyChange100Period, DailyChange200Period, DailyChangeEMA20, DailyChangeEMA100
+                                   , DailyConsecChange1Period, DailyConsecChangeEMA20, DailyConsecChangeEMA100, DailyConsecChangeRSI5, DailyConsecChangeRSI14, DailyConsecChangeSlowRSI5
+                                   , DailyConsecChangeSlowRSI14, DailyConsecChangeMACD, DailyConsecChangeMACDSignal, DailyConsecChangeBBPct, DailyConsecChangeBBWidth
+                                   , DailyConsecChangeStochFastK, DailyConsecChangeStochFastD, DailyConsecChangeStochSlowD
+                                   , ChangeFuture1, ChangeFuture10, ChangeFuture15, ChangeFuture20, ChangeFuture50, ChangeFuture100, ChangeFuture200))
   
-  data$ClassChange1Period <- as.factor(ifelse(data$ClassChange1Period > 0, 'Up', 'Down'))
-  data$ClassChange5Period <- as.factor(ifelse(data$ClassChange5Period > 0, 'Up', 'Down'))
-  data$ClassChange10Period <- as.factor(ifelse(data$ClassChange10Period > 0, 'Up', 'Down'))
-  data$ClassChange25Period <- as.factor(ifelse(data$ClassChange25Period > 0, 'Up', 'Down'))
-  data$ClassChange50Period <- as.factor(ifelse(data$ClassChange50Period > 0, 'Up', 'Down'))
-  data$ClassChange100Period <- as.factor(ifelse(data$ClassChange100Period > 0, 'Up', 'Down'))
-  data$ClassChange200Period <- as.factor(ifelse(data$ClassChange200Period > 0, 'Up', 'Down'))
-  data$ClassChangeEMA <- as.factor(ifelse(data$ClassChangeEMA > 0, 'Up', 'Down'))
-  data$ClassChangeRSI <- as.factor(ifelse(data$ClassChangeRSI > 0, 'Up', 'Down'))
-  data$ClassChangeSlowRSI <- as.factor(ifelse(data$ClassChangeSlowRSI > 0, 'Up', 'Down'))
-  data$ClassChangeMACD <- as.factor(ifelse(data$ClassChangeMACD > 0, 'Up', 'Down'))
-  data$DailyClassChange1Period <- as.factor(ifelse(data$DailyClassChange1Period > 0, 'Up', 'Down'))
-  data$DailyClassChange5Period <- as.factor(ifelse(data$DailyClassChange5Period > 0, 'Up', 'Down'))
-  data$DailyClassChange10Period <- as.factor(ifelse(data$DailyClassChange10Period > 0, 'Up', 'Down'))
-  data$DailyClassChange25Period <- as.factor(ifelse(data$DailyClassChange25Period > 0, 'Up', 'Down'))
-  data$DailyClassChange50Period <- as.factor(ifelse(data$DailyClassChange50Period > 0, 'Up', 'Down'))
-  data$DailyClassChange100Period <- as.factor(ifelse(data$DailyClassChange100Period > 0, 'Up', 'Down'))
-  data$DailyClassChange200Period <- as.factor(ifelse(data$DailyClassChange200Period > 0, 'Up', 'Down'))
-  data$DailyClassChangeEMA <- as.factor(ifelse(data$DailyClassChangeEMA > 0, 'Up', 'Down'))
-  data$DailyClassChangeRSI <- as.factor(ifelse(data$DailyClassChangeRSI > 0, 'Up', 'Down'))
-  data$DailyClassChangeSlowRSI <- as.factor(ifelse(data$DailyClassChangeSlowRSI > 0, 'Up', 'Down'))
-  data$DailyClassChangeMACD <- as.factor(ifelse(data$DailyClassChangeMACD > 0, 'Up', 'Down'))
-  
-  dummy <- dummyVars(" ~ .", data = data, fullRank = FALSE)
+  dummy <- dummyVars(" ~ .", data = data, fullRank = TRUE)
   data <- data.frame(predict(dummy, newdata = data))
-  
-  ##### MODEL PREDICTION - GLMNET #####
-  # method <- "glmnet"
-  # 
-  # data[[outcomeName]] <- ifelse(data[[outcomeName]] > 0, 1, 0)
-  # 
-  # predictorsNames <- names(data)[names(data) != outcomeName]
-  # 
-  # splitIndex <- createDataPartition(data[[outcomeName]], p = .75, list = FALSE, times = 1)
-  # trainDF <- data[ splitIndex,]
-  # testDF  <- data[-splitIndex,]
-  # 
-  # objControl <- trainControl(method = 'cv', number = 3, returnResamp = 'none')
-  # objModel <- train(trainDF[,predictorsNames], trainDF[[outcomeName]], 
-  #                   method = method,  
-  #                   metric = "RMSE", 
-  #                   trControl = objControl)
-  # 
-  # predictionsGlmnet <- predict(object = objModel, testDF[,predictorsNames])
-  # 
-  # auc <- roc(testDF[[outcomeName]], predictionsGlmnet)
-  # 
-  # ##### AGGREGATE RESULTS #####
-  # var <- varImp(objModel, scale = FALSE)$importance
-  # var$var <- rownames(var)
-  # var <- var[order(-var$Overall),]
-  # 
-  # resultsRelativeImportance <- rbind(resultsRelativeImportance, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-  #                                                  , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall))
-  # 
-  # resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType, type = "accuracy"
-  #                                                , result = postResample(pred = predictionsGlmnet, obs = testDF[[outcomeName]])[1], row.names = NULL))
-  # resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-  #                                                , type = "auc", result = as.numeric(auc$auc)))
+  data <- data[order(data$Row),]
   
   ##### MODEL PREDICTION - GBM #####
   method <- "gbm"
   
   data[[outcomeName]] <- as.factor(ifelse(data[[outcomeName]] > 0, 'Up', 'Down'))
   
-  predictorsNames <- names(data)[names(data) != outcomeName]
+  predictorsNames <- names(data)[names(data) != outcomeName & names(data) != 'Row']
   
-  splitIndex <- createDataPartition(data[[outcomeName]], p = .75, list = FALSE, times = 1)
-  trainDF <- data[ splitIndex,]
-  testDF  <- data[-splitIndex,]
+  trainData <- subset(data, Row < quantile(Row, train_split))
+  testData  <- subset(data, Row >= quantile(Row, train_split))
+  # modelData <- subset(data, Row < quantile(Row, train_split))
+  # finalTestData  <- subset(data, Row >= quantile(Row, train_split))
+  # splitIndex <- createDataPartition(modelData[[outcomeName]], p = .75, list = FALSE, times = 1)
+  # trainData <- modelData[ splitIndex,]
+  # testData  <- modelData[-splitIndex,]
   
   objControl <- trainControl(method = 'cv', number = 3, returnResamp = 'none', summaryFunction = twoClassSummary, classProbs = TRUE)
-  objModel <- train(trainDF[,predictorsNames], trainDF[[outcomeName]],
+  objModel <- train(trainData[,predictorsNames], trainData[[outcomeName]],
                     method = method,
                     trControl = objControl,
                     metric = "ROC",
                     preProc = c("center", "scale"))
   
-  predictionsGbmRaw <- predict(object = objModel, testDF[,predictorsNames], type = 'raw')
-  predictionsGbmProb <- predict(object = objModel, testDF[,predictorsNames], type = 'prob')
+  predictionsRaw <- predict(object = objModel, testData[,predictorsNames], type = 'raw')
+  predictionsProb <- predict(object = objModel, testData[,predictorsNames], type = 'prob')
+  # predictionsRaw <- predict(object = objModel, finalTestData[,predictorsNames], type = 'raw')
+  # predictionsProb <- predict(object = objModel, finalTestData[,predictorsNames], type = 'prob')
   
-  auc <- roc(ifelse(testDF[[outcomeName]] == "Up", 1 , 0), predictionsGbmProb[[2]])
+  auc <- roc(ifelse(testData[[outcomeName]] == "Up", 1 , 0), predictionsProb[[2]])
+  # auc <- roc(ifelse(finalTestData[[outcomeName]] == "Up", 1 , 0), predictionsProb[[2]])
   
   ##### AGGREGATE RESULTS #####
   var <- varImp(objModel, scale = FALSE)$importance
@@ -122,25 +82,40 @@ for (i in 1:length(symbols$Symbol)) {
   var <- var[order(-var$Overall),]
   
   resultsRelativeImportance <- rbind(resultsRelativeImportance, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-                                                   , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall))
+                                                   , row = seq(from = 1, to = length(var$var), by = 1), var = var$var, rel.imp = var$Overall, count = 1))
   
   resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType, type = "accuracy"
-                                                 , result = postResample(pred = predictionsGbmRaw, obs = as.factor(testDF[[outcomeName]]))[1], row.names = NULL))
+                                                 , result = postResample(pred = predictionsRaw, obs = as.factor(testData[[outcomeName]]))[1], row.names = NULL, count = 1))
   resultsModel <- rbind(resultsModel, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
-                                                 , type = "auc", result = as.numeric(auc$auc)))
+                                                 , type = "auc", result = as.numeric(auc$auc), count = 1))
+  
+  tempProbs <- data.frame(testData$Row, testData[[outcomeName]], predictionsRaw, predictionsProb)
+  colnames(tempProbs) <- c('row', 'result', 'prediction', 'prob.down', 'prob.up')
+  resultsTestPredictions <- rbind(resultsTestPredictions, data.frame(symbol = symbol, outcomeName = outcomeName, method = objModel$method, model = objModel$modelType
+                                                 , row = tempProbs$row, result = tempProbs$result, prediction = tempProbs$prediction, prob.down = tempProbs$prob.down
+                                                 , prob.up = tempProbs$prob.up, correct = ifelse(tempProbs$result == tempProbs$prediction, 1 , 0), count = 1))
+  
+  stop("STOP")
 }
 
 ##### WRITE RESULTS TO CSV #####
 write.table(
   resultsRelativeImportance,
-  file = paste(file_destination, "resultsRelativeImportance ", as.character(format(Sys.time(), "%Y-%d-%m %H%M%S")), ".csv", sep = ""),
+  file = paste(file_destination, "resultsRelativeImportance-", outcomeName, " ", as.character(format(Sys.time(), "%Y-%d-%m %H%M%S")), ".csv", sep = ""),
   sep = ",",
   row.names = FALSE
 )
 
 write.table(
   resultsModel,
-  file = paste(file_destination, "resultsModel ", as.character(format(Sys.time(), "%Y-%d-%m %H%M%S")), ".csv", sep = ""),
+  file = paste(file_destination, "resultsModel-", outcomeName, " ", as.character(format(Sys.time(), "%Y-%d-%m %H%M%S")), ".csv", sep = ""),
+  sep = ",",
+  row.names = FALSE
+)
+
+write.table(
+  resultsTestPredictions,
+  file = paste(file_destination, "resultsTestPredictions-", outcomeName, " ", as.character(format(Sys.time(), "%Y-%d-%m %H%M%S")), ".csv", sep = ""),
   sep = ",",
   row.names = FALSE
 )

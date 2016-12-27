@@ -75,4 +75,5 @@ for (i in 1:length(files)) {
   )
 }
 
+##### PRINT PROCESSING TIME #####
 print(Sys.time() - start_time)
